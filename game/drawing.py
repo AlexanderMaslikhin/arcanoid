@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from functools import reduce
+
 from .functions import correct_y, line_track
 import curses
 
@@ -39,21 +41,30 @@ class Block(DrawObject):
         for i in range(self.length):
             window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(self.armor))
 
-    # def is_inside(self, x, y):
-    #     res = self.y == y and self.x <= x < self.x + self.len
-    #     if res and self.armor:
+    # def hit(self):
+    #     if self.armor:
     #         self.armor -= 1
-    #     return res
+    #         with open("log_block.txt", "a") as f:
+    #             f.write(f'i was hit {self}. my new armor{self.armor}\n')
 
-    def hit(self):
-        if self.armor:
+    def i_am_here(self, cur_pos, ort):
+        res = 0
+        x, y = cur_pos
+        dx, k = ort
+        dy = k * dx
+        if self.y == y + dy and self.x <= x < (self.x + self.length):
+            res = 2  # 010
+        elif self.x <= (x + dx) < (self.x + self.length) and self.y == y:
+            res = 4  # 100
+        elif self.y == y + dy and self.x <= (x + dx) < (self.x + self.length):
+            res = 1  # 001
+        if res and self.armor:
+            # changing armor -1
             self.armor -= 1
-            with open("log_block.txt", "a") as f:
-                f.write(f'i was hit {self}. my new armor{self.armor}\n')
+        with open("log_block.txt", "a") as f:
+            if res:
+                f.write(f'block {self.x}, {self.y}, {self.length}, coord: {cur_pos}, {ort}, res={res}\n')
 
-    def i_am_here(self, other):
-        x, y = other
-        res = self.y == y and self.x <= x < self.x + self.length
         return res
 
 
@@ -72,14 +83,14 @@ class Ball(DrawObject):
         y_dir = self.track[1] // abs(self.track[1])
         return self.track[0], y_dir
 
-    def update_track(self, on_x, on_y, on_track):
-        if sum((on_x, on_y, on_track)):
-            if on_x and on_y or on_track and not on_x and not on_y:
+    def update_track(self, on_track):
+        if on_track:
+            if on_track in (1, 6, 7):
                 self.track[0] = -self.track[0]  # changing direction on X axis
-            elif on_x:
+            elif on_track in (4, 5):
                 self.track[0] = -self.track[0]  # changing direction on X axis
                 self.track[1] = -self.track[1]  # changing angle
-            elif on_y:
+            elif on_track in (2, 3):
                 self.track[1] = -self.track[1]  # changing angle
             self.track[2] = self.position[1] - self.track[1] * self.position[0] # chaging bias b = y - k*x
         pass
@@ -147,9 +158,11 @@ class Wall:
             X Y Diag   | __ пример
             1 1  1     | *   011(x=0, y=1, diag=1, направление вверх и вправо)
         """
-
+        on_tracks_list = [block.i_am_here(cur_pos, ort) for block in self.blocks]
+        res = reduce(lambda x, y: x | y, on_tracks_list)
+        with open("wall.log", "a") as fw:
+            if res:
+                fw.write(f'{on_tracks_list}, {res}\n')
         self.del_killed()
-        # with open("log_block.txt", "a") as f:
-        #     f.write(f'{on_x}, {on_y}, {on_track}\n')
-        # return on_x, on_y, on_track
+        return res
 

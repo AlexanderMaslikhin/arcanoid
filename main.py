@@ -4,7 +4,6 @@ import curses.ascii
 import locale
 from game.arcanoid import GameField
 from game.functions import line_track
-from game.ball import Ball
 
 
 w_str = ''

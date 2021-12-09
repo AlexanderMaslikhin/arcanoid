@@ -68,16 +68,16 @@ class GameField:
             if key in (curses.KEY_RIGHT, curses.KEY_LEFT):
                 self.pad.update_pad(key)
             self.ball.step()
-            on_x, on_y, on_track = self.wall.is_hit_me(self.ball.get_xy(), self.ball.get_ort())
-            self.score = self.score + 100 * sum((on_x, on_y, on_track)) if on_x or on_y or on_track else self.score
+            on_track = self.wall.is_hit_me(self.ball.get_xy(), self.ball.get_ort())
+            self.score = self.score + 100 * bin(on_track).count('1')
             # checking borders of window and pad collision
             if self.ball.x == 1 or self.ball.x == self.field_width - 1:
-                on_x = True
-            elif self.ball.y == self.field_height - 1:
-                on_y = True
-            if self.pad.on_me(self.ball.x, self.ball.y):
-                on_y = True
-            self.ball.update_track(on_x, on_y, on_track)
+                on_track = on_track | 4
+            if self.ball.y == self.field_height - 1 or self.pad.on_me(self.ball.x, self.ball.y):
+                on_track = on_track | 2
+
+            self.logfile.write(f'ontrack = {on_track}, {self.ball.get_xy()}, {self.ball.get_ort()}\n')
+            self.ball.update_track(on_track)
             self.redraw()
         pass
 
