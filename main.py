@@ -3,64 +3,52 @@ import curses
 import curses.ascii
 import locale
 from game.arcanoid import GameField
-from game.functions import line_track
-
-
-w_str = ''
-
-
-def main(stdscr):
-    start_x = stdscr.getbegyx()[1]
-    stop_x = stdscr.getmaxyx()[1]
-    stdscr.leaveok(True)
-    curses.curs_set(0)
-    curses.noecho()
-    curses.cbreak()
-
-    curses.start_color()
-    curses.use_default_colors()
-    for i in range(0, curses.COLORS):
-        curses.init_pair(i + 1, i, -1)
-
-    stdscr.keypad(True)
-#    stdscr.nodelay(True)
-#     w_str = bytes(w_str)
-    while start_x < stop_x:
-        stdscr.addch(0, start_x, curses.ACS_BOARD, curses.color_pair(start_x+100))
-        stdscr.refresh()
-        start_x += 1
-        sleep(0.5)
-    # s = ''
-    # i = 0
-    # while True:
-    #     key = stdscr.getch()
-    #     if key == ord('q'):
-    #         break
-    #     elif key == curses.KEY_LEFT:
-    #         s = 'Left key'
-    #     elif key == curses.KEY_RIGHT:
-    #         s = 'Right key'
-    #     # else:
-    #     #     continue
-    #     stdscr.clear()
-    #     stdscr.addstr(0, 0, s + ' ' + str(i))
-    #     sleep(0.1)
-    #     stdscr.refresh()
-    #     i += 1
-
 
 locale.setlocale(locale.LC_ALL, '')
 code = locale.getpreferredencoding()
 
-# passing arguments:
-# {
-#     speed: 10 or 20 or 30 (steps per second)
-#     pad_size: 10 or 15 or 20 (length of pad in symbols)
-#     wall_thickness: form 1 to 5 (count of layers in the wall)
-# }
+level = {
+    1: (10, 3, 15),
+    2: (10, 4, 10),
+    3: (15, 3, 15),
+    4: (15, 4, 10),
+    5: (15, 5, 10),
+    6: (20, 3, 15),
+    7: (20, 4, 15),
+    8: (20, 5, 15),
+    9: (20, 5, 10),
+}
 
 
-def test(window):
+def show_menu():
+    print("Игра по типу арканоида. ")
+    print("Управление стрелками вправо и влево.")
+    print("Дается три попытки")
+    print("Блоки разного цвета, цвет блока показывает его броню от 1 до 5")
+    print("При ударе мячом блок теряет 1 очко брони или исчезает, если брони больше нет")
+    print("Если надоест, нажмите 'q' для выхода")
+    print("-" * 20)
+    print("Выберите сложность игры:")
+    print("\t 1. Скорость 10, толщина стены 3, длина пэда 15")
+    print("\t 2. Скорость 10, толщина стены 4, длина пэда 10")
+    print("\t 3. Скорость 15, толщина стены 3, длина пэда 15")
+    print("\t 4. Скорость 15, толщина стены 4, длина пэда 10")
+    print("\t 5. Скорость 15, толщина стены 5, длина пэда 10")
+    print("\t 6. Скорость 20, толщина стены 3, длина пэда 15")
+    print("\t 7. Скорость 20, толщина стены 4, длина пэда 15")
+    print("\t 8. Скорость 20, толщина стены 5, длина пэда 15")
+    print("\t 9. Скорость 20, толщина стены 5, длина пэда 10")
+    while True:
+        choice = input("Ваш выбор: ")
+        if choice.isdigit():
+            choice = int(choice)
+            if 0 < choice < 10:
+                return choice
+        print("Попробуйте еще раз")
+
+
+def run(window, difficulty_level):
+    speed, wall_thick, pad_size = level[difficulty_level]
     window.leaveok(True)
     curses.curs_set(0)
     curses.noecho()
@@ -70,32 +58,10 @@ def test(window):
 
     curses.start_color()
     curses.use_default_colors()
-    field = GameField(window, speed=10, pad_size=15, wall_thickness=3)
-    field.create_field()
-    window.getch()
-    window.nodelay(True)
-    field.run_game()
+    field = GameField(window, speed=speed, pad_size=pad_size, wall_thickness=wall_thick)
+    return field.run_game()
 
 
-#curses.wrapper(test)
-w = curses.initscr()
-#w.add
-test(w)
-# curses.start_color()
-#print(w.getmaxyx(), w.getyx())
-#w.getkey()
-# b = Ball(10, 3)
-# while True:
-#     sym = w.getkey()
-#     print(f'start at {b.x}, {b.y}')
-#     b.step()
-#     b.draw(w)
-#     if sym == 'q':
-#         break
-curses.endwin()
-# b = int.from_bytes("Б".encode(code), 'big')
-# s = b.to_bytes(2, 'big').decode(code)
-# print(b, s)
+score = curses.wrapper(run, show_menu())
 
-
-
+print(f'Вы набрали {score} очков')

@@ -2,11 +2,11 @@ import curses
 
 
 blocks_colors = {
-    1: curses.COLOR_RED,
-    2: curses.COLOR_YELLOW,
+    5: curses.COLOR_RED,
+    4: curses.COLOR_YELLOW,
     3: curses.COLOR_GREEN,
-    4: curses.COLOR_BLUE,
-    5: curses.COLOR_WHITE
+    2: curses.COLOR_BLUE,
+    1: curses.COLOR_WHITE
 }
 
 

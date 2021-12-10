@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import reduce
+from random import randint
 
 from .functions import correct_y, line_track
 import curses
@@ -41,11 +42,6 @@ class Block(DrawObject):
         for i in range(self.length):
             window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(self.armor))
 
-    # def hit(self):
-    #     if self.armor:
-    #         self.armor -= 1
-    #         with open("log_block.txt", "a") as f:
-    #             f.write(f'i was hit {self}. my new armor{self.armor}\n')
 
     def i_am_here(self, cur_pos, ort):
         res = 0
@@ -61,9 +57,6 @@ class Block(DrawObject):
         if res and self.armor:
             # changing armor -1
             self.armor -= 1
-        with open("log_block.txt", "a") as f:
-            if res:
-                f.write(f'block {self.x}, {self.y}, {self.length}, coord: {cur_pos}, {ort}, res={res}\n')
 
         return res
 
@@ -71,7 +64,7 @@ class Block(DrawObject):
 class Ball(DrawObject):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.char = ord('*')
+        self.char = curses.ACS_DIAMOND
         bias = y - x
         self.track = [1, 1, bias]  # x direction(1,-1), k - tan(angle) k может быть любым, но пока для простоты 1, bias. y = k*x+bias
 
@@ -95,21 +88,35 @@ class Ball(DrawObject):
             self.track[2] = self.position[1] - self.track[1] * self.position[0] # chaging bias b = y - k*x
         pass
 
+    def set_position(self, x, y):
+        self.position[0] = x
+        self.position[1] = y
+        self.track = [1, 1, y - x]
+
     def draw(self, window):
         window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x, self.char, curses.color_pair(0))
 
 
 class Pad(DrawObject):
-    def __init__(self, x, y, length):
+    def __init__(self, x, y, length, field_width):
         super().__init__(x, y)
         self.length = length
         self.char = curses.ACS_BOARD
+        self.field_width = field_width
+        self.move_speed = 5
 
     def update_pad(self, key):
         if key == curses.KEY_LEFT:
-            self.position[0] -= 2
+            self.position[0] -= self.move_speed
         if key == curses.KEY_RIGHT:
-            self.position[0] += 2
+            self.position[0] += self.move_speed
+        if self.x < 0:
+            self.position[0] = 0
+        elif self.field_width < self.x + self.length:
+            self.position[0] = self.field_width - self.length
+
+    def set_position(self, x):
+        self.position[0] = x
 
     def draw(self, window):
         for i in range(self.length):
@@ -126,8 +133,8 @@ class Wall:
         block_len = length // 15
         start_at = (length % 15) // 2
         for i in range(thickness, 0, -1):
-            armor = i + 1
             for j in range(15):
+                armor = randint(1, 5)
                 self.blocks.append(Block(start_at + j * block_len, start_y + i, armor, block_len))
 
     def del_killed(self):
@@ -160,9 +167,6 @@ class Wall:
         """
         on_tracks_list = [block.i_am_here(cur_pos, ort) for block in self.blocks]
         res = reduce(lambda x, y: x | y, on_tracks_list)
-        with open("wall.log", "a") as fw:
-            if res:
-                fw.write(f'{on_tracks_list}, {res}\n')
         self.del_killed()
         return res
 
