@@ -55,6 +55,7 @@ class GameField:
             self.window.nodelay(True)
             while not self.wall.is_empty() and self.ball.y > 1:
                 key = self.window.getch()
+                curses.flushinp()
                 if key == ord('q'):
                     return self.score
                 if key in (curses.KEY_RIGHT, curses.KEY_LEFT):

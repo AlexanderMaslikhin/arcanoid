@@ -53,6 +53,7 @@ def run(window, difficulty_level):
     curses.curs_set(0)
     curses.noecho()
     curses.cbreak()
+
     window.scrollok(False)
     window.keypad(True)
 
