@@ -69,7 +69,7 @@ class GameField:
                     on_track = on_track | 2
 
                 if on_track:
-		    self.ball.update_track(on_track)
+                    self.ball.update_track(on_track)
                 self.redraw()
             self.window.nodelay(False)
             self.lives -= 1
