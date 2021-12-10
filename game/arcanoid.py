@@ -68,7 +68,8 @@ class GameField:
                 if self.ball.y == self.field_height - 1 or self.pad.on_me(self.ball.x, self.ball.y):
                     on_track = on_track | 2
 
-                self.ball.update_track(on_track)
+                if on_track:
+		    self.ball.update_track(on_track)
                 self.redraw()
             self.window.nodelay(False)
             self.lives -= 1
