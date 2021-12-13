@@ -151,13 +151,6 @@ class Wall:
     def draw(self, window):
         [elem.draw(window) for elem in self.blocks]
 
-    def find_block(self, coord):
-        for i, block in enumerate(self.blocks):
-            if block.i_am_here(coord):
-                return True, i
-        return False, -1
-        pass
-
     def is_hit_me(self, cur_pos, ort):
 
         """
