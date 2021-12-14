@@ -30,10 +30,17 @@ class GameField:
         self.lives = 3
 
     def create_field(self):
-        self.pad.set_position(randint(1, self.field_width - self.pad_size))
+        self.pad.set_position((self.field_width - self.pad_size) // 2)
         self.ball.set_position(self.pad.x + self.pad_size // 2, 3)
         self.redraw()
-        pass
+        while True:
+            key = self.window.getch()
+            if key in (curses.KEY_LEFT, curses.KEY_RIGHT):
+                self.pad.update_pad(key)
+            else:
+                break
+            self.ball.set_position(self.pad.x + self.pad_size // 2, 3)
+            self.redraw()
 
     def redraw(self):
         self.window.clear()
