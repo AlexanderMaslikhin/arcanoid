@@ -17,7 +17,9 @@ from .functions import blocks_colors, correct_y
 
 class GameField:
     def __init__(self, window, **kwargs):
+        self.prepare = False
         self.window = window
+        self.start_msg = "Для старта игры нажмите любую кнопку кроме стрелок вправо/влево."
         self.step_time = 1/kwargs['speed']
         self.pad_size = kwargs['pad_size']
         self.field_height, self.field_width = self.window.getmaxyx()
@@ -30,6 +32,7 @@ class GameField:
         self.lives = 3
 
     def create_field(self):
+        self.prepare = True
         self.pad.set_position((self.field_width - self.pad_size) // 2)
         self.ball.set_position(self.pad.x + self.pad_size // 2, 3)
         self.redraw()
@@ -41,6 +44,7 @@ class GameField:
                 break
             self.ball.set_position(self.pad.x + self.pad_size // 2, 3)
             self.redraw()
+        self.prepare = False
 
     def redraw(self):
         self.window.clear()
@@ -48,7 +52,10 @@ class GameField:
         self.ball.draw(self.window)
         self.wall.draw(self.window)
         self.pad.draw(self.window)
-#        self.window.addstr(0,0, f'ball_x = {self.ball.x}, ball_y = {correct_y(self.ball.y, self.field_height)} height = {self.field_height}, width = {self.field_width}')
+        if self.prepare:
+            self.window.addstr(self.field_height // 2,
+                               (self.field_width - len(self.start_msg)) // 2,
+                               self.start_msg.upper())
         score_str = f'Score: {self.score}'
         self.window.addstr(self.field_height-1, self.field_width - len(score_str) - 1, score_str)
         self.window.addstr(self.field_height-1, 0, 'TRIES:[' + '*' * self.lives + ' ' * (3 - self.lives) + ']')
@@ -70,9 +77,9 @@ class GameField:
                 on_track = self.wall.is_hit_me(self.ball.get_xy(), self.ball.get_ort())
                 self.score = self.score + 100 * bin(on_track).count('1')
                 # checking borders of window and pad collision
-                if self.ball.x == 1 or self.ball.x == self.field_width - 1:
+                if self.ball.x == 0 or self.ball.x == self.field_width - 1:
                     on_track = on_track | 4
-                if self.ball.y == self.field_height - 1 or self.pad.on_me(self.ball.x, self.ball.y):
+                if self.ball.y == self.field_height or self.pad.on_me(self.ball.x, self.ball.y):
                     on_track = on_track | 2
                 if on_track:
                     self.ball.update_track(on_track)

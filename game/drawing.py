@@ -64,7 +64,8 @@ class Block(DrawObject):
 class Ball(DrawObject):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.char = curses.ACS_DIAMOND
+#        self.char = curses.ACS_DIAMOND
+        self.char = ord('@')
         bias = y - x
         self.track = [1, 1, bias]  # x direction(1,-1), k - tan(angle) k может быть любым, но пока для простоты 1, bias. y = k*x+bias
 
