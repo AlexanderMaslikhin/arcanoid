@@ -160,6 +160,7 @@ class Wall:
         """
         on_tracks_list = [block.i_am_here(cur_pos, ort) for block in self.blocks]
         res = reduce(lambda x, y: x | y, on_tracks_list)
-        self.del_killed()
+        if res:
+            self.del_killed()
         return res
 
