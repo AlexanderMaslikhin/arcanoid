@@ -58,7 +58,6 @@ class GameField:
     def run_game(self):
         while self.lives:
             self.create_field()
-            self.window.getch()
             self.window.nodelay(True)
             while not self.wall.is_empty() and self.ball.y > 1:
                 key = self.window.getch()
