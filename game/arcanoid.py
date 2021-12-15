@@ -25,6 +25,8 @@ class GameField:
         self.step_time = 1/kwargs['speed']
         self.pad_size = kwargs['pad_size']
         self.field_height, self.field_width = self.window.getmaxyx()
+        if self.field_width < len(self.start_msg):
+            self.start_msg = 'Для старта нажмите любую кнопку'
         self.ball = Ball(self.field_width // 2, 3)
         for pair, fg_color in blocks_colors.items():
             curses.init_pair(pair, fg_color, -1)
@@ -48,6 +50,15 @@ class GameField:
             self.redraw()
         self.prepare = False
 
+    def draw_stats(self):
+        stats = self.wall.stats
+        cur_x = 15
+        for color, count in stats.items():
+            self.window.addstr(self.field_height-1, cur_x, str(count), curses.color_pair(color))
+            cur_x += len(str(count)) + 1
+        self.window.addstr(self.field_height-1, cur_x, "ВСЕГО: " + str(len(self.wall)))
+
+
     def redraw(self):
         self.window.clear()
         # draw all objects
@@ -65,6 +76,7 @@ class GameField:
         score_str = f'Score: {self.score}'
         self.window.addstr(self.field_height-1, self.field_width - len(score_str) - 1, score_str)
         self.window.addstr(self.field_height-1, 0, 'TRIES:[' + '*' * self.lives + ' ' * (3 - self.lives) + ']')
+        self.draw_stats()
         self.window.refresh()
         sleep(self.step_time)
 

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from functools import reduce
 from random import randint
 
-from .functions import correct_y, line_track
+from .functions import correct_y, line_track, blocks_colors
 import curses
 
 
@@ -165,3 +165,9 @@ class Wall:
             self.del_killed()
         return res
 
+    def __getattr__(self, item):
+        if item == 'stats':
+            stats = {key: 0 for key in blocks_colors}
+            for block in self.blocks:
+                stats[block.armor] += 1
+            return stats
