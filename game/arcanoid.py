@@ -18,8 +18,10 @@ from .functions import blocks_colors, correct_y
 class GameField:
     def __init__(self, window, **kwargs):
         self.prepare = False
+        self.paused = False
         self.window = window
-        self.start_msg = "Для старта игры нажмите любую кнопку кроме стрелок вправо/влево."
+        self.start_msg = "Cтрелки вправо/влево сдвигают пад. 'P' - пауза, 'Q' - выход. Для старта нажмите любую кнопку"
+        self.pause_msg = "Для продолжения нажмите любую клавишу"
         self.step_time = 1/kwargs['speed']
         self.pad_size = kwargs['pad_size']
         self.field_height, self.field_width = self.window.getmaxyx()
@@ -56,6 +58,10 @@ class GameField:
             self.window.addstr(self.field_height // 2,
                                (self.field_width - len(self.start_msg)) // 2,
                                self.start_msg.upper())
+        if self.paused:
+            self.window.addstr(self.field_height // 2,
+                               (self.field_width - len(self.pause_msg)) // 2,
+                               self.pause_msg.upper())
         score_str = f'Score: {self.score}'
         self.window.addstr(self.field_height-1, self.field_width - len(score_str) - 1, score_str)
         self.window.addstr(self.field_height-1, 0, 'TRIES:[' + '*' * self.lives + ' ' * (3 - self.lives) + ']')
@@ -73,6 +79,8 @@ class GameField:
                     return self.score
                 if key in (curses.KEY_RIGHT, curses.KEY_LEFT):
                     self.pad.update_pad(key)
+                if key == ord('p'):
+                    self.paused = True
                 self.ball.step()
                 on_track = self.wall.is_hit_me(self.ball.get_xy(), self.ball.get_ort())
                 self.score = self.score + 100 * bin(on_track).count('1')
@@ -84,6 +92,11 @@ class GameField:
                 if on_track:
                     self.ball.update_track(on_track)
                 self.redraw()
+                if self.paused:
+                    self.window.nodelay(False)
+                    self.window.getch()
+                    self.paused = False
+                    self.window.nodelay(True)
             if self.wall.is_empty():
                 return self.score
             self.window.nodelay(False)
