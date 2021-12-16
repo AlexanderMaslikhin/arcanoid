@@ -165,9 +165,9 @@ class Wall:
             self.del_killed()
         return res
 
-    def __getattr__(self, item):
-        if item == 'stats':
-            stats = {key: 0 for key in blocks_colors}
-            for block in self.blocks:
-                stats[block.armor] += 1
-            return stats
+    @property
+    def stats(self):
+        stat = {key: 0 for key in blocks_colors}
+        for block in self.blocks:
+            stat[block.armor] += 1
+        return stat
