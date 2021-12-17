@@ -31,7 +31,7 @@ def show_menu():
     print("-" * 20)
     print("Выберите сложность игры:")
     for i, lvl in level.items():
-        print(f"\t{i}. Скорость {lvl[0]}, тольщина стены {lvl[1]}, длина ракетки {lvl[2]}")
+        print(f"\t{i}. Скорость {lvl[0]}, толщина стены {lvl[1]}, длина ракетки {lvl[2]}")
     while True:
         choice = input("Ваш выбор: ")
         if choice.isdigit():
