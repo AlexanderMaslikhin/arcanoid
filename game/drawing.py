@@ -138,8 +138,6 @@ class Pad(DrawObject):
         self.window.clrtoeol()
         self.window.hline(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char, self.length)
         self.redraw = False
-        # for i in range(self.length):
-        #     window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(0))
 
     def on_me(self, x, y):
         return self.y == y - 1 and self.x <= x < self.x + self.length

@@ -3,7 +3,7 @@ from time import sleep
 from .drawing import Ball
 from .drawing import Wall
 from .drawing import Pad
-from .functions import blocks_colors, correct_y
+from .functions import blocks_colors
 
 # passing arguments:
 # {
@@ -118,5 +118,5 @@ class GameField:
             self.window.nodelay(False)
             self.lives -= 1
         return self.score
-        pass
+
 

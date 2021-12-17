@@ -1,4 +1,3 @@
-from time import sleep
 import curses
 import curses.ascii
 import locale
