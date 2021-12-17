@@ -1,6 +1,4 @@
-import _curses
 import curses
-from random import randint
 from time import sleep
 from .drawing import Ball
 from .drawing import Wall
@@ -55,7 +53,6 @@ class GameField:
         self.window.move(self.field_height // 2, 0)
         self.window.clrtoeol()
 
-
     def draw_stats(self):
         stats = self.wall.stats
         cur_x = 15
@@ -64,9 +61,7 @@ class GameField:
             cur_x += len(str(count)) + 1
         self.window.addstr(self.field_height-1, cur_x, "ВСЕГО: " + str(len(self.wall)))
 
-
     def redraw(self):
-#        self.window.clear()
         # draw all objects
         self.ball.draw()
         self.wall.draw()

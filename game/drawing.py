@@ -26,7 +26,7 @@ class DrawObject(ABC):
                 ret = self.position[1]
             return ret
         else:
-            raise AttributeError(f'There is no attrubute {item}')
+            raise AttributeError(f'There is no attribute {item}')
 
 
 class Block(DrawObject):
@@ -40,10 +40,9 @@ class Block(DrawObject):
 
     def draw(self):
         if self.redraw:
-            self.window.hline(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char, self.length, curses.color_pair(self.armor))
+            self.window.hline(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char,
+                              self.length, curses.color_pair(self.armor))
             self.redraw = False
-        # for i in range(self.length):
-        #     window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(self.armor))
 
     def i_am_here(self, cur_pos, ort):
         res = 0
@@ -74,7 +73,8 @@ class Ball(DrawObject):
 #        self.char = curses.ACS_DIAMOND
         self.char = ord('@')
         bias = y - x
-        self.track = [1, 1, bias]  # x direction(1,-1), k - tan(angle) k может быть любым, но пока для простоты 1, bias. y = k*x+bias
+        # x direction(1,-1), k - tan(angle) k может быть любым, но пока для простоты 1, bias. y = k*x+bias
+        self.track = [1, 1, bias]
         self.prev_pos = self.position[:]
 
     def step(self):
@@ -95,7 +95,7 @@ class Ball(DrawObject):
                 self.track[1] = -self.track[1]  # changing angle
             elif on_track in (2, 3):
                 self.track[1] = -self.track[1]  # changing angle
-            self.track[2] = self.position[1] - self.track[1] * self.position[0] # chaging bias b = y - k*x
+            self.track[2] = self.position[1] - self.track[1] * self.position[0]  # changing bias b = y - k*x
         pass
 
     def set_position(self, x, y):
