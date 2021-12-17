@@ -16,7 +16,7 @@ level = {
     6: (20, 3, 15),
     7: (20, 4, 15),
     8: (20, 5, 15),
-    9: (20, 5, 10),
+    9: (30, 5, 10),
 }
 
 
@@ -36,7 +36,7 @@ def show_menu():
         choice = input("Ваш выбор: ")
         if choice.isdigit():
             choice = int(choice)
-            if 0 < choice < len(level):
+            if 0 < choice <= len(level):
                 return choice
         print("Попробуйте еще раз")
 
