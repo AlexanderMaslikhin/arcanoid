@@ -8,15 +8,15 @@ locale.setlocale(locale.LC_ALL, '')
 code = locale.getpreferredencoding()
 
 level = {
-    1: (10, 3, 15),
-    2: (10, 4, 10),
-    3: (15, 3, 15),
-    4: (15, 4, 15),
-    5: (15, 5, 10),
-    6: (20, 3, 15),
-    7: (20, 4, 15),
-    8: (20, 5, 15),
-    9: (30, 5, 10),
+    1: (15, 3, 15),
+    2: (15, 4, 10),
+    3: (20, 3, 15),
+    4: (20, 4, 15),
+    5: (25, 3, 10),
+    6: (25, 4, 15),
+    7: (25, 5, 15),
+    8: (30, 3, 15),
+    9: (30, 4, 10),
 }
 
 
@@ -36,7 +36,7 @@ def show_menu():
         choice = input("Ваш выбор: ")
         if choice.isdigit():
             choice = int(choice)
-            if 0 < choice <= len(level):
+            if 0 < choice < len(level):
                 return choice
         print("Попробуйте еще раз")
 

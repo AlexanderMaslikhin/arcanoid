@@ -7,11 +7,12 @@ import curses
 
 
 class DrawObject(ABC):
-    def __init__(self, x, y):
+    def __init__(self, window, x, y):
         self.position = [x, y]
+        self.window = window
 
     @abstractmethod
-    def draw(self, windows):
+    def draw(self):
         pass
 
     def get_xy(self):
@@ -29,19 +30,20 @@ class DrawObject(ABC):
 
 
 class Block(DrawObject):
-    def __init__(self, x, y, armor, length):
-        super().__init__(x, y)
+    def __init__(self, window, x, y, armor, length):
+        super().__init__(window, x, y)
         self.char = curses.ACS_BOARD
         assert 0 < armor < 6
         self.armor = armor
         self.length = length
-        self.checked = False
+        self.redraw = True
 
-    def draw(self, window):
-        self.checked = False
-        for i in range(self.length):
-            window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(self.armor))
-
+    def draw(self):
+        if self.redraw:
+            self.window.hline(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char, self.length, curses.color_pair(self.armor))
+            self.redraw = False
+        # for i in range(self.length):
+        #     window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(self.armor))
 
     def i_am_here(self, cur_pos, ort):
         res = 0
@@ -56,20 +58,27 @@ class Block(DrawObject):
             res = 1  # 001
         if res and self.armor:
             # changing armor -1
+            self.redraw = True
             self.armor -= 1
 
         return res
 
+    def clear(self):
+        for i in range(self.length):
+            self.window.addch(correct_y(self.y, self.window.getmaxyx()[0]), self.x + i, 32)
+
 
 class Ball(DrawObject):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, window, x, y):
+        super().__init__(window, x, y)
 #        self.char = curses.ACS_DIAMOND
         self.char = ord('@')
         bias = y - x
         self.track = [1, 1, bias]  # x direction(1,-1), k - tan(angle) k может быть любым, но пока для простоты 1, bias. y = k*x+bias
+        self.prev_pos = self.position[:]
 
     def step(self):
+        self.prev_pos = self.position[:]
         self.position[0] += self.track[0]  # changing x coord
         self.position[1] = line_track(*self.track[1:], self.position[0])  # get y coord
 
@@ -90,23 +99,28 @@ class Ball(DrawObject):
         pass
 
     def set_position(self, x, y):
+        self.prev_pos = self.position[:]
         self.position[0] = x
         self.position[1] = y
         self.track = [1, 1, y - x]
 
-    def draw(self, window):
-        window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x, self.char, curses.color_pair(0))
+    def draw(self):
+        self.window.addch(correct_y(self.prev_pos[1], self.window.getmaxyx()[0]), self.prev_pos[0], 32)
+        self.window.addch(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char, curses.color_pair(0))
 
 
 class Pad(DrawObject):
-    def __init__(self, x, y, length, field_width):
-        super().__init__(x, y)
+    def __init__(self, window, x, y, length, field_width):
+        super().__init__(window, x, y)
+        self.redraw = False
         self.length = length
         self.char = curses.ACS_BOARD
         self.field_width = field_width
         self.move_speed = 5
 
     def update_pad(self, key):
+        if key in (curses.KEY_LEFT, curses.KEY_RIGHT):
+            self.redraw = True
         if key == curses.KEY_LEFT:
             self.position[0] -= self.move_speed
         if key == curses.KEY_RIGHT:
@@ -119,16 +133,20 @@ class Pad(DrawObject):
     def set_position(self, x):
         self.position[0] = x
 
-    def draw(self, window):
-        for i in range(self.length):
-            window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(0))
+    def draw(self):
+        self.window.move(correct_y(self.y, self.window.getmaxyx()[0]), 0)
+        self.window.clrtoeol()
+        self.window.hline(correct_y(self.y, self.window.getmaxyx()[0]), self.x, self.char, self.length)
+        self.redraw = False
+        # for i in range(self.length):
+        #     window.addch(correct_y(self.y, window.getmaxyx()[0]), self.x + i, self.char, curses.color_pair(0))
 
     def on_me(self, x, y):
         return self.y == y - 1 and self.x <= x < self.x + self.length
 
 
 class Wall:
-    def __init__(self, thickness, length, start_y):
+    def __init__(self, window, thickness, length, start_y):
         assert 0 < thickness < 6
         self.blocks = []
         block_len = length // 15
@@ -136,11 +154,12 @@ class Wall:
         for i in range(thickness, 0, -1):
             for j in range(15):
                 armor = randint(1, 5)
-                self.blocks.append(Block(start_at + j * block_len, start_y + i, armor, block_len))
+                self.blocks.append(Block(window, start_at + j * block_len, start_y + i, armor, block_len))
 
     def del_killed(self):
         for elem in self.blocks[:]:
             if not elem.armor:
+                elem.clear()
                 self.blocks.remove(elem)
 
     def is_empty(self):
@@ -149,8 +168,8 @@ class Wall:
     def __len__(self):
         return len(self.blocks)
 
-    def draw(self, window):
-        [elem.draw(window) for elem in self.blocks]
+    def draw(self):
+        [elem.draw() for elem in self.blocks]
 
     def is_hit_me(self, cur_pos, ort):
 

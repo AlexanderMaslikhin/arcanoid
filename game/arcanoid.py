@@ -27,12 +27,12 @@ class GameField:
         self.field_height, self.field_width = self.window.getmaxyx()
         if self.field_width < len(self.start_msg):
             self.start_msg = 'Для старта нажмите любую кнопку'
-        self.ball = Ball(self.field_width // 2, 3)
+        self.ball = Ball(window, self.field_width // 2, 3)
         for pair, fg_color in blocks_colors.items():
             curses.init_pair(pair, fg_color, -1)
-        self.wall = Wall(kwargs['wall_thickness'], self.field_width, self.field_height - 3 - kwargs['wall_thickness'])
+        self.wall = Wall(window, kwargs['wall_thickness'], self.field_width, self.field_height - 3 - kwargs['wall_thickness'])
         self.score = 0
-        self.pad = Pad((self.field_width - self.pad_size) // 2, 2, self.pad_size, self.field_width)
+        self.pad = Pad(window, (self.field_width - self.pad_size) // 2, 2, self.pad_size, self.field_width)
         self.lives = 3
 
     def create_field(self):
@@ -48,7 +48,13 @@ class GameField:
                 break
             self.ball.set_position(self.pad.x + self.pad_size // 2, 3)
             self.redraw()
+        self.clear_info()
         self.prepare = False
+
+    def clear_info(self):
+        self.window.move(self.field_height // 2, 0)
+        self.window.clrtoeol()
+
 
     def draw_stats(self):
         stats = self.wall.stats
@@ -60,11 +66,11 @@ class GameField:
 
 
     def redraw(self):
-        self.window.clear()
+#        self.window.clear()
         # draw all objects
-        self.ball.draw(self.window)
-        self.wall.draw(self.window)
-        self.pad.draw(self.window)
+        self.ball.draw()
+        self.wall.draw()
+        self.pad.draw()
         if self.prepare:
             self.window.addstr(self.field_height // 2,
                                (self.field_width - len(self.start_msg)) // 2,
@@ -74,8 +80,10 @@ class GameField:
                                (self.field_width - len(self.pause_msg)) // 2,
                                self.pause_msg.upper())
         score_str = f'Score: {self.score}'
-        self.window.addstr(self.field_height-1, self.field_width - len(score_str) - 1, score_str)
+        self.window.move(self.field_height-1, 0)
+        self.window.clrtoeol()
         self.window.addstr(self.field_height-1, 0, 'TRIES:[' + '*' * self.lives + ' ' * (3 - self.lives) + ']')
+        self.window.addstr(self.field_height-1, self.field_width - len(score_str) - 1, score_str)
         self.draw_stats()
         self.window.refresh()
         sleep(self.step_time)
@@ -107,6 +115,7 @@ class GameField:
                 if self.paused:
                     self.window.nodelay(False)
                     self.window.getch()
+                    self.clear_info()
                     self.paused = False
                     self.window.nodelay(True)
             if self.wall.is_empty():
