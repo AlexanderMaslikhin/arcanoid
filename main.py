@@ -36,7 +36,7 @@ def show_menu():
         choice = input("Ваш выбор: ")
         if choice.isdigit():
             choice = int(choice)
-            if 0 < choice < len(level):
+            if 0 < choice <= len(level):
                 return choice
         print("Попробуйте еще раз")
 
